@@ -182,51 +182,43 @@ router.post('/api/v1/poem_theme/create', function(req, res, next) {
 
 
 // API for poem
-//router.get('/api/v1/poem_theme/:theme_id/poems', function(req, res, next) {
-//  var themeId = Number(req.params.theme_id);
-//  if (!Number.isInteger(themeId)) {
-//    res.status(400).send({error: 'Bad Request'});
-//  }
-//  const query = {
-//    text: "select * from poem where poem_theme_id = $1;",
-//    values: [themeId]
-//  };
-//  client.query(query)
-//    .then(r => {
-//      if (r.rows.length == 0) {
-//        return res.status(404).send({error: 'Not Found'});
-//      }
-//      //res.json(r.rows[0]);
-//      return res.status(200).json(r.rows[0]);
-//    })
-//    .catch(err => {
-//      console.log(err);
-//      return res.status(400).send({error: 'Bad Request'});
-//  });
-//});
+router.get('/api/v1/poem_theme/:theme_id/poems', function(req, res, next) {
+  var themeId = Number(req.params.theme_id);
+  if (!Number.isInteger(themeId)) {
+    return res.status(400).send({error: 'Bad Request'});
+  }
+  const queryText = "select * from poem where poem_theme_id = ?;";
+  const queryParams = [themeId];
 
-//router.get('/api/v1/poem/:id', function(req, res, next) {
-//  var id = Number(req.params.id);
-//  if (!Number.isInteger(id)) {
-//    res.status(400).send({error: 'Bad Request'});
-//  }
-//  const query = {
-//    text: "select * from poem where id = $1;",
-//    values: [id]
-//  };
-//  client.query(query)
-//    .then(r => {
-//      if (r.rows.length == 0) {
-//        return res.status(404).send({error: 'Not Found'});
-//      }
-//      //res.json(r.rows[0]);
-//      return res.status(200).json(r.rows[0]);
-//    })
-//    .catch(err => {
-//      console.log(err);
-//      return res.status(400).send({error: 'Bad Request'});
-//  });
-//});
+  client.query(queryText, queryParams, (err, result, fields) => {
+    if (err) {
+      return res.status(400).send({error: 'Bad Request'});
+    } else if (result.length == 0) {
+      return res.status(404).send({error: 'Not Found'});
+    } else {
+      return res.status(200).json(result);
+    }
+  });
+});
+
+router.get('/api/v1/poem/:id', function(req, res, next) {
+  var id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).send({error: 'Bad Request'});
+  }
+  const queryText = "select * from poem where id = ?;";
+  const queryParams = [id];
+
+  client.query(queryText, queryParams, (err, result, fields) => {
+    if (err) {
+      return res.status(400).send({error: 'Bad Request'});
+    } else if (result.length == 0) {
+      return res.status(404).send({error: 'Not Found'});
+    } else {
+      return res.status(200).json(result);
+    }
+  });
+});
 
 router.post('/api/v1/poem/create', function(req, res, next) {
   const request_json = req.body;
@@ -251,71 +243,62 @@ router.post('/api/v1/poem/create', function(req, res, next) {
 
 
 // API for poem_tag
-//router.get('/api/v1/poem_theme/:theme_id/poem_tags', function(req, res, next) {
-//  var themeId = Number(req.params.theme_id);
-//  if (!Number.isInteger(themeId)) {
-//    res.status(400).send({error: 'Bad Request'});
-//  }
-//  const query = {
-//    text: "select * from poem_tag where poem_theme_id = $1;",
-//    values: [themeId]
-//  };
-//  client.query(query)
-//    .then(r => {
-//      if (r.rows.length == 0) {
-//        return res.status(404).send({error: 'Not Found'});
-//      }
-//      return res.status(200).json(r.rows[0]);
-//    })
-//    .catch(err => {
-//      console.log(err);
-//      return res.status(400).send({error: 'Bad Request'});
-//  });
-//});
-//
-//router.get('/api/v1/poem_tag/:id', function(req, res, next) {
-//  var id = Number(req.params.id);
-//  if (!Number.isInteger(id)) {
-//    res.status(400).send({error: 'Bad Request'});
-//  }
-//  const query = {
-//    text: "select * from poem_tag where id = $1;",
-//    values: [id]
-//  };
-//  client.query(query)
-//    .then(r => {
-//      if (r.rows.length == 0) {
-//        return res.status(404).send({error: 'Not Found'});
-//      }
-//      return res.status(200).json(r.rows[0]);
-//    })
-//    .catch(err => {
-//      console.log(err);
-//      return res.status(400).send({error: 'Bad Request'});
-//  });
-//});
-//
-//router.post('/api/v1/poem_tag/create', function(req, res, next) {
-//  const request_json = req.body;
-//  const nfav = 0;
-//  const tag = request_json['tag'];
-//  const poemThemeId = request_json['poem_theme_id'];
-//  const query = {
-//    text: "INSERT INTO poem_tag (tag, poem_theme_id, nfav)\
-//      VALUES ($1, $2, $3);",
-//    values: [tag, poemThemeId, nfav]
-//  };
-//  client.query(query)
-//    .then(r => {
-//      if (r.rows.length == 0) {
-//        return res.status(404).send({error: 'Not Found'});
-//      }
-//      return res.status(200).json(r.rows[0]);
-//    })
-//    .catch(err => {
-//      console.log(err);
-//      return res.status(400).send({error: 'Bad Request'});
-//  });
-//});
+router.get('/api/v1/poem_theme/:theme_id/poem_tags', function(req, res, next) {
+  var themeId = Number(req.params.theme_id);
+  if (!Number.isInteger(themeId)) {
+    return res.status(400).send({error: 'Bad Request'});
+  }
+  const queryText = "select * from poem_tag where poem_theme_id = ?;";
+  const queryParams = [themeId];
+
+  client.query(queryText, queryParams, (err, result, fields) => {
+    if (err) {
+      return res.status(400).send({error: 'Bad Request'});
+    } else if (result.length == 0) {
+      return res.status(404).send({error: 'Not Found'});
+    } else {
+      return res.status(200).json(result);
+    }
+  })
+});
+
+router.get('/api/v1/poem_tag/:id', function(req, res, next) {
+  var id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(400).send({error: 'Bad Request'});
+  }
+  const query = {
+    text: "select * from poem_tag where id = $1;",
+    values: [id]
+  };
+  client.query(query)
+    .then(r => {
+      if (r.rows.length == 0) {
+        return res.status(404).send({error: 'Not Found'});
+      }
+      return res.status(200).json(r.rows[0]);
+    })
+    .catch(err => {
+      console.log(err);
+      return res.status(400).send({error: 'Bad Request'});
+  });
+});
+
+router.post('/api/v1/poem_tag/create', function(req, res, next) {
+  const request_json = req.body;
+  const nfav = 0;
+  const tag = request_json['tag'];
+  const poemThemeId = request_json['poem_theme_id'];
+  const queryText = "INSERT INTO poem_tag SET ?;";
+  const queryParams = { tag: tag, poem_theme_id: poemThemeId, nfav: nfav };
+
+  client.query(queryText, queryParams, (err, result, fields) => {
+    if (err) {
+      return res.status(400).send({error: 'Bad Request'});
+    } else {
+      return res.status(200).json(r.rows[0]);
+    }
+  });
+});
 
 module.exports = router;
