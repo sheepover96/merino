@@ -4,14 +4,6 @@ var router = express.Router();
 var { Client } = require('pg');
 var mysql = require('mysql');
 
-//var client = new Client({
-//  host: 'localhost',
-//  user: config.db_username,
-//  database: config.db_name,
-//  password: config.db_password,
-//  port: config.db_port
-//});
-
 var client = mysql.createConnection({
   host: 'localhost',
   user: config.db_username,
@@ -63,13 +55,11 @@ router.post('/api/v1/compe/launch', async function(req, res, next) {
 
   client.beginTransaction( err => {
     if (err) {
-      console.log(err);
       res.status(500).send({error: 'Internal Server Error'});
     }
     client.query(poemThemeQueryText, poemThemeQueryParams,
       (err, result, fields) => {
         if (err) {
-          console.log(err);
           res.status(400).send({error: 'Bad Request'});
         } else {
           const poemThemeId = result.insertId;
@@ -80,7 +70,6 @@ router.post('/api/v1/compe/launch', async function(req, res, next) {
           client.query(poemTagQueryText, [poemTagObjList],
             (err, result, fields) => {
               if (err) {
-                console.log(err);
                 res.status(400).send({error: 'Bad Request'});
               } else {
                 const poemQueryParams = {
@@ -90,23 +79,21 @@ router.post('/api/v1/compe/launch', async function(req, res, next) {
                 client.query(poemQueryText, poemQueryParams,
                   (err, result, fields) => {
                     if (err) {
-                      console.log(err);
                       res.status(400).send({error: 'Bad Request'});
                     } else {
                       client.commit(err => {
                         if (err) {
-                          console.log(err);
                           res.status(500).send({error: 'Internal Server Error'});
                         } else {
                           res.status(200).send('OK');
                         }
                       });
                     }
-                  })
+                  });
               }
-            })
+            });
         }
-      })
+      });
   });
 });
 
@@ -233,9 +220,9 @@ router.post('/api/v1/poem/create', function(req, res, next) {
   }
   client.query(queryText, queryParams, (err, result, fields) => {
     if (err) {
-      res.status(400).send({error: 'Bad Request'});
+      return res.status(400).send({error: 'Bad Request'});
     } else {
-      res.status(200).send('OK');
+      return res.status(200).send('OK');
     }
   });
 });
@@ -265,38 +252,35 @@ router.get('/api/v1/poem_theme/:theme_id/poem_tags', function(req, res, next) {
 router.get('/api/v1/poem_tag/:id', function(req, res, next) {
   var id = Number(req.params.id);
   if (!Number.isInteger(id)) {
-    res.status(400).send({error: 'Bad Request'});
+    return res.status(400).send({error: 'Bad Request'});
   }
-  const query = {
-    text: "select * from poem_tag where id = $1;",
-    values: [id]
-  };
-  client.query(query)
-    .then(r => {
-      if (r.rows.length == 0) {
+  const queryText = "select * from poem_tag where id = ?;";
+  const queryParams = [id];
+  client.query(queryText, queryParams, (err, result, fields) => {
+    if (err) {
+      return res.status(400).send({error: 'Bad Request'});
+    } else {
+      console.log(result);
+      if (result.length == 0) {
         return res.status(404).send({error: 'Not Found'});
       }
-      return res.status(200).json(r.rows[0]);
-    })
-    .catch(err => {
-      console.log(err);
-      return res.status(400).send({error: 'Bad Request'});
+      return res.status(200).json(result[0]);
+    }
   });
 });
 
 router.post('/api/v1/poem_tag/create', function(req, res, next) {
   const request_json = req.body;
-  const nfav = 0;
   const tag = request_json['tag'];
   const poemThemeId = request_json['poem_theme_id'];
   const queryText = "INSERT INTO poem_tag SET ?;";
-  const queryParams = { tag: tag, poem_theme_id: poemThemeId, nfav: nfav };
+  const queryParams = { tag: tag, poem_theme_id: poemThemeId };
 
   client.query(queryText, queryParams, (err, result, fields) => {
     if (err) {
       return res.status(400).send({error: 'Bad Request'});
     } else {
-      return res.status(200).json(r.rows[0]);
+      return res.status(200).json('OK');
     }
   });
 });
